@@ -540,6 +540,7 @@ class FairseqTask(object):
 
     def begin_epoch(self, epoch, model):
         """Hook function called before the start of each epoch."""
+        print(f"is this here begin epoch doing nothing??")
         pass
 
     def begin_valid_epoch(self, epoch, model):

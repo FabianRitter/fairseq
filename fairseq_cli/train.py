@@ -89,6 +89,7 @@ def main(cfg: FairseqConfig) -> None:
     assert cfg.criterion, "Please specify criterion to train a model"
 
     # Build model and criterion
+    # in our case the backend is: 'no_c10d'
     if cfg.distributed_training.ddp_backend == "fully_sharded":
         with fsdp_enable_wrap(cfg.distributed_training):
             model = fsdp_wrap(task.build_model(cfg.model))
@@ -125,7 +126,7 @@ def main(cfg: FairseqConfig) -> None:
 
     # Load valid dataset (we load training data below, based on the latest checkpoint)
     # We load the valid dataset AFTER building the model
-    data_utils.raise_if_valid_subsets_unintentionally_ignored(cfg)
+    data_utils.raise_if_valid_subsets_unintentionally_ignored(cfg)#oroginally this one is set to None in the default config file.
     if cfg.dataset.combine_valid_subsets:
         task.load_dataset("valid", combine=True, epoch=1)
     else:
@@ -141,9 +142,11 @@ def main(cfg: FairseqConfig) -> None:
         )
     else:
         quantizer = None
+    print(f"Do we have a quantizer so far> {quantizer}")
 
     # Build trainer
     if cfg.common.model_parallel_size == 1:
+        print(f"creating trainer with 1 gpu")
         trainer = Trainer(cfg, task, model, criterion, quantizer)
     else:
         trainer = MegatronTrainer(cfg, task, model, criterion)
@@ -161,6 +164,7 @@ def main(cfg: FairseqConfig) -> None:
 
     # Load the latest checkpoint if one is available and restore the
     # corresponding train iterator
+    print(f"do we have a checkpoint? how is this saved!! {cfg.checkpoint}")
     extra_state, epoch_itr = checkpoint_utils.load_checkpoint(
         cfg.checkpoint,
         trainer,
@@ -301,6 +305,8 @@ def train(
             else False
         ),
     )
+    print(f"progress parameter line 271: {progress}")
+    #progress parameter line 271: <fairseq.logging.progress_bar.JsonProgressBar object at 0x7fe0b93df1f0>
     progress.update_config(_flatten_config(cfg))
 
     trainer.begin_epoch(epoch_itr.epoch)
@@ -308,6 +314,7 @@ def train(
     valid_subsets = cfg.dataset.valid_subset.split(",")
     should_stop = False
     num_updates = trainer.get_num_updates()
+    print(f"progress:      {progress}")
     logger.info("Start iterating over samples")
     for i, samples in enumerate(progress):
         with metrics.aggregate("train_inner"), torch.autograd.profiler.record_function(
@@ -552,7 +559,7 @@ def cli_main(
     if args.profile:
         with torch.cuda.profiler.profile():
             with torch.autograd.profiler.emit_nvtx():
-                distributed_utils.call_main(cfg, main)
+                distributed_utils.call_main(cfg, main) # comes from
     else:
         distributed_utils.call_main(cfg, main)
 

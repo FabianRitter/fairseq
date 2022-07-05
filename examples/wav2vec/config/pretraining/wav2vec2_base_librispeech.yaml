@@ -3,7 +3,7 @@
 common:
   fp16: true
   log_format: json
-  log_interval: 200
+  log_interval: 100
 
 checkpoint:
   save_interval_updates: 25000
@@ -12,19 +12,21 @@ checkpoint:
 
 task:
   _name: audio_pretraining
-  data: ???
+  data: /home/fabian/projects/fairseq_practice/manifests/
   max_sample_size: 250000
   min_sample_size: 32000
   normalize: false
+  #precompute_mask_indices: true
+
 
 dataset:
-  num_workers: 6
+  num_workers: 2
   max_tokens: 1400000
   skip_invalid_size_inputs_valid_test: true
 
 distributed_training:
-  distributed_world_size: 64
-  ddp_backend: legacy_ddp
+  distributed_world_size: 1
+  ddp_backend: no_c10d #legacy_ddp
 
 criterion:
   _name: wav2vec

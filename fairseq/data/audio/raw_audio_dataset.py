@@ -39,7 +39,7 @@ class RawAudioDataset(FairseqDataset):
         **mask_compute_kwargs,
     ):
         super().__init__()
-
+        print(f"Here I will print all the variables involved inside RawAudioDataset class, inside fairseq/data/audio/raw_audio_dataset.py")
         self.sample_rate = sample_rate
         self.sizes = []
         self.max_sample_size = (
@@ -55,8 +55,13 @@ class RawAudioDataset(FairseqDataset):
             self._features_size_map = {}
             self._C = mask_compute_kwargs["encoder_embed_dim"]
             self._conv_feature_layers = eval(mask_compute_kwargs["conv_feature_layers"])
+            print(f"self.mask_compute_kwargs: {self.mask_compute_kwargs}")
+            print(f"self._C: {self._C}")
+        print(f"compute_mask_indices: {self.compute_mask_indices}")
 
-    def __getitem__(self, index):
+
+
+    def __getitem__(self, index):# note this is the method you always need to write if you want to create a new dataloader class....
         raise NotImplementedError()
 
     def __len__(self):
@@ -283,14 +288,14 @@ class FileAudioDataset(RawAudioDataset):
             for i, line in enumerate(f):
                 items = line.strip().split("\t")
                 assert len(items) == 2, line
-                sz = int(items[1])
+                sz = int(items[1]) #size that comes from the manifest
                 if min_sample_size is not None and sz < min_sample_size:
                     skipped += 1
-                    self.skipped_indices.add(i)
+                    self.skipped_indices.add(i) #here they are skipping data that are smaller than the minimum sample size for pre-training.
                     continue
                 self.fnames.append(self.text_compressor.compress(items[0]))
                 sizes.append(sz)
-        logger.info(f"loaded {len(self.fnames)}, skipped {skipped} samples")
+        logger.info(f"loaded {len(self.fnames)}, skipped {skipped} samples") #we saved tha path of audios we will use for training...
 
         self.sizes = np.array(sizes, dtype=np.int64)
 

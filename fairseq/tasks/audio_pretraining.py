@@ -143,7 +143,7 @@ class AudioPretrainingTask(FairseqTask):
                 task_cfg.autoregressive = not task_cfg.criterion == "ctc"
 
         text_compression_level = getattr(
-            TextCompressionLevel, str(self.cfg.text_compression_level)
+            TextCompressionLevel, str(self.cfg.text_compression_level)#None for AudioPreTraining wav2vec2.
         )
         if getattr(task_cfg, "binarized_dataset", False):
             self.datasets[split] = BinarizedAudioDataset(
@@ -195,8 +195,7 @@ class AudioPretrainingTask(FairseqTask):
 
     def build_model(self, model_cfg: FairseqDataclass, from_checkpoint=False):
         model = super().build_model(model_cfg, from_checkpoint)
-
-        actualized_cfg = getattr(model, "cfg", None)
+        actualized_cfg = getattr(model, "cfg", None) # Python getattr() function is used to get the value of an object’s attribute and if no attribute of that object is found, default value is returned.
         if actualized_cfg is not None:
             # if "w2v_args" in actualized_cfg:
             if hasattr(actualized_cfg, "w2v_args"):

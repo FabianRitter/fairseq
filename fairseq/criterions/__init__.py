@@ -23,9 +23,10 @@ from omegaconf import DictConfig
 ) = registry.setup_registry(
     "--criterion", base_class=FairseqCriterion, default="cross_entropy"
 )
-
+# this function returned a tuple with many things including the build_criterion_ function.
 
 def build_criterion(cfg: DictConfig, task):
+    print(f"is this being called?")
     return build_criterion_(cfg, task)
 
 
