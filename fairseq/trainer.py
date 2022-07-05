@@ -98,8 +98,9 @@ class Trainer(object):
         self._model = model
         if not self.is_fsdp:
             if cfg.common.fp16:
+                print(f"using fp16, what is this?")
                 assert not cfg.common.amp, "Cannot use fp16 and AMP together"
-                self._criterion = self._criterion.half()
+                self._criterion = self._criterion.half()#reduces model to 16 bit...
                 self._model = self._model.half()
             elif cfg.common.bf16:
                 self._criterion = self._criterion.to(dtype=torch.bfloat16)
@@ -142,13 +143,14 @@ class Trainer(object):
         self._ema = None
 
         # TODO(myleott): support tpu
-        if self.cuda and self.data_parallel_world_size > 1:
+        if self.cuda and self.data_parallel_world_size > 1:#this wont happen.
             self._grad_norm_buf = torch.cuda.DoubleTensor(self.data_parallel_world_size)
         else:
             self._grad_norm_buf = None
 
         self.quantizer = quantizer
         if self.quantizer is not None:
+            print(f"quantizer happens????")
             self.quantizer.set_trainer(self)
 
         # get detailed cuda environment
@@ -758,6 +760,8 @@ class Trainer(object):
             self.quantizer.begin_epoch(epoch)
 
         # task specific setup per epoch
+        print(f"WHICH ONE WAS THE TASK?? \n")
+        print(f"with one was the task???: {self.task}, \n \n")
         self.task.begin_epoch(epoch, self.get_model())
 
         if self.tpu:
